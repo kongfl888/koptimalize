@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common
+# (C)K 2020
+
+START=98
+
+set_rps()
+{
+    # set rps
+    DATE=`date +[%Y-%m-%d]%H:%M:%S`
+    sysctl -w net.core.rps_sock_flow_entries=32768
+    for fileRps in $(ls /sys/class/net/eth*/queues/rx-*/rps_cpus)
+    do
+        echo ff > $fileRps
+    done
+
+    for fileRfc in $(ls /sys/class/net/eth*/queues/rx-*/rps_flow_cnt)
+    do
+        echo 32768 > $fileRfc
+    done
+}
+
+set_irq()
+{
+    [ -f /proc/irq/28/smp_affinity ] && echo 8 > /proc/irq/28/smp_affinity
+    [ -f /proc/irq/166/smp_affinity ] && echo 2 > /proc/irq/166/smp_affinity
+}
+
+start()
+{
+    set_rps
+    set_irq
+}
