@@ -25,6 +25,7 @@ case "$(board_name)" in
 friendlyarm,nanopi-r2s | friendlyelec,nanopi-r2 | friendlyelec,nanopi-r2s)
 	set_interface_core 8 "eth0"
 	set_interface_core 2 "eth1" "xhci-hcd:usb"
+	set_interface_core 4 "ff160000.i2c"
 	;;
 esac
 
