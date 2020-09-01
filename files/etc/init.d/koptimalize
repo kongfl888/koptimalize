@@ -29,5 +29,4 @@ set_irq()
 start()
 {
     set_rps
-    set_irq
 }
