@@ -2,6 +2,8 @@
 
 [ "$ACTION" = add ] || exit
 
+sleep 5s
+
 get_device_irq() {
 	local device="$1"
 
@@ -13,18 +15,29 @@ set_interface_core() {
 	local core_mask="$1"
 	local interface="$2"
 	local device="$3"
+	local force="$4"
 
 	[ -z "${device}" ] && device="$interface"
 
 	local irq=$(get_device_irq "$device")
+	local forceset=0
 
-	[ -f "/proc/irq/${irq}/smp_affinity" ] && echo "${core_mask}" > /proc/irq/${irq}/smp_affinity
+	if [ -f "/proc/irq/${irq}/smp_affinity" ]; then
+		if [ -z "${force}" ]; then
+			local smp=`cat /proc/irq/${irq}/smp_affinity`
+			[ ! -z "$smp" -a "$smp" != "f" -a "$smp" != "ff" ] && forceset=0 || forceset=1
+		else
+			forceset=1
+		fi
+		[ $forceset -eq 1 ] && echo "${core_mask}" > /proc/irq/${irq}/smp_affinity
+	fi
 }
 
-case "$(board_name)" in
-friendlyarm,nanopi-r2s | friendlyelec,nanopi-r2 | friendlyelec,nanopi-r2s)
-	set_interface_core 8 "eth0"
-	set_interface_core 2 "eth1" "xhci-hcd:usb"
-	;;
-esac
+#case "$(board_name)" in
+#friendlyarm,nanopi-r2s | friendlyelec,nanopi-r2 | friendlyelec,nanopi-r2s)
+	set_interface_core 2 "eth0"
+	set_interface_core 4 "eth1" "xhci-hcd:usb"
+	set_interface_core 8 "dw-mci"
+#	;;
+#esac
 
